@@ -58,7 +58,7 @@ type Sender = mpsc::UnboundedSender<Data>;
 type Receiver = mpsc::UnboundedReceiver<Data>;
 static ROTATION_RELAY_SERVER: AtomicUsize = AtomicUsize::new(0);
 type RelayServers = Vec<String>;
-static CHECK_RELAY_TIMEOUT: u64 = 3_000;
+const CHECK_RELAY_TIMEOUT: u64 = 3_000;
 static ALWAYS_USE_RELAY: AtomicBool = AtomicBool::new(false);
 
 #[derive(Clone)]
@@ -1056,7 +1056,8 @@ impl RendezvousServer {
 
     async fn handle_listener2(&self, stream: TcpStream, addr: SocketAddr) {
         let mut rs = self.clone();
-        if addr.ip().is_loopback() {
+        let ip = try_into_v4(addr).ip();
+        if ip.is_loopback() {
             tokio::spawn(async move {
                 let mut stream = stream;
                 let mut buffer = [0; 1024];
@@ -1106,13 +1107,29 @@ impl RendezvousServer {
     async fn handle_listener_inner(
         &mut self,
         stream: TcpStream,
-        addr: SocketAddr,
+        mut addr: SocketAddr,
         key: &str,
         ws: bool,
     ) -> ResultType<()> {
         let mut sink;
         if ws {
-            let ws_stream = tokio_tungstenite::accept_async(stream).await?;
+            use tokio_tungstenite::tungstenite::handshake::server::{Request, Response};
+            let callback = |req: &Request, response: Response| {
+                let headers = req.headers();
+                let real_ip = headers
+                    .get("X-Real-IP")
+                    .or_else(|| headers.get("X-Forwarded-For"))
+                    .and_then(|header_value| header_value.to_str().ok());
+                if let Some(ip) = real_ip {
+                    if ip.contains('.') {
+                        addr = format!("{ip}:0").parse().unwrap_or(addr);
+                    } else {
+                        addr = format!("[{ip}]:0").parse().unwrap_or(addr);
+                    }
+                }
+                Ok(response)
+            };
+            let ws_stream = tokio_tungstenite::accept_hdr_async(stream, callback).await?;
             let (a, mut b) = ws_stream.split();
             sink = Some(Sink::Ws(a));
             while let Ok(Some(Ok(msg))) = timeout(30_000, b.next()).await {
@@ -1303,7 +1320,7 @@ async fn create_udp_listener(port: i32, rmem: usize) -> ResultType<FramedSocket>
 
 #[inline]
 async fn create_tcp_listener(port: i32) -> ResultType<TcpListener> {
-    let s = listen_any(port as _, true).await?;
+    let s = listen_any(port as _).await?;
     log::debug!("listen on tcp {:?}", s.local_addr());
     Ok(s)
 }
