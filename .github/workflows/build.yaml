@@ -44,7 +44,7 @@ jobs:
         with:
           toolchain: "1.88"
           override: true
-          default: true
+          #default: true
           components: rustfmt
           profile: minimal
           target: x86_64-win7-windows-msvc
@@ -89,13 +89,13 @@ jobs:
         run: |
           rustup default nightly
           cargo build --release
-          xcopy /y ..\target\x86_64-pc-windows-msvc\release\*.exe setup\bin\
+          xcopy /y ..\target\x86_64-win7-windows-msvc\release\*.exe setup\bin\
           xcopy /y target\release\*.exe setup\
           mkdir setup\logs
           makensis /V1 setup.nsi
           mkdir SignOutput
           mv RustDeskServer.Setup.exe SignOutput\
-          mv ..\target\x86_64-pc-windows-msvc\release\*.exe SignOutput\
+          mv ..\target\x86_64-win7-windows-msvc\release\*.exe SignOutput\
         working-directory: ./ui
 
       - name: Sign UI setup file 
