@@ -47,13 +47,13 @@ jobs:
           default: true
           components: rustfmt
           profile: minimal
-          target: x86_64-pc-windows-msvc
+          target: x86_64-win7-windows-msvc
 
       - name: Build
         uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --release --all-features --target=x86_64-pc-windows-msvc
+          args: --release --all-features --target=x86_64-win7-windows-msvc
           use-cross: true
 
       - name: Install NSIS
@@ -126,6 +126,8 @@ jobs:
     needs: 
       - build-win
     runs-on: ubuntu-22.04
+    permissions:
+      contents: write
     strategy:
       fail-fast: false
       matrix:
