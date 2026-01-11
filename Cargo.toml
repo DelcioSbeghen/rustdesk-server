@@ -76,3 +76,6 @@ panic = 'abort'
 strip = true
 #opt-level = 'z' # only have smaller size after strip # Default is 3, better performance
 #rpath = true # Not needed
+
+[patch.crates-io]
+home = "=0.5.11"
