@@ -27,12 +27,17 @@ env:
   GHCR_IMAGE_CLASSIC: ghcr.io/${{ github.repository_owner }}/rustdesk-server
   
 jobs:
-
   build-win:
     name: Build - windows
     runs-on: windows-2022
 
     steps:
+
+      - name: Clean Cargo cache
+        run: |
+          rmdir /s /q %USERPROFILE%\.cargo\registry
+          rmdir /s /q %USERPROFILE%\.cargo\git
+        shell: cmd
       
       - name: Checkout
         uses: actions/checkout@v3
