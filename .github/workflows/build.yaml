@@ -50,7 +50,10 @@ jobs:
           target: x86_64-pc-windows-msvc
 
       - name: Downgrade home crate
-        run: cargo update -p home --precise 0.5.11    
+        run: cargo update -p home --precise 0.5.11
+        
+      - name: Downgrade litemap
+        run: cargo update -p litemap --precise 0.7.4
 
       - name: Build
         uses: actions-rs/cargo@v1
