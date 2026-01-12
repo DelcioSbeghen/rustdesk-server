@@ -45,6 +45,7 @@ jobs:
           toolchain: nightly-2025-07-10
           override: true
           profile: minimal
+          components: rustfmt, rust-src
 
       - name: Build
         uses: actions-rs/cargo@v1
