@@ -49,6 +49,9 @@ jobs:
           profile: minimal
           target: x86_64-pc-windows-msvc
 
+      - name: Downgrade home crate
+        run: cargo update -p home --precise 0.5.11    
+
       - name: Build
         uses: actions-rs/cargo@v1
         with:
