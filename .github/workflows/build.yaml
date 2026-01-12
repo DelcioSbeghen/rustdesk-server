@@ -42,7 +42,7 @@ jobs:
       - name: Install Rust nightly (Win7)
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: nightly-2024-07-20
+          toolchain: nightly-2024-10-05
           override: true
           profile: minimal
 
